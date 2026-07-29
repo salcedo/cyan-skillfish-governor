@@ -1,5 +1,11 @@
-{ pkgs ? import <nixpkgs> {}}:
-
+{pkgs ? import <nixpkgs> {}}:
 pkgs.mkShell {
-  packages = [ pkgs.libdrm ];
+  inputsFrom = [
+    (pkgs.callPackage ./nix/package.nix {})
+  ];
+  packages = with pkgs; [
+    cargo
+    rustc
+    libdrm
+  ];
 }

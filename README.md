@@ -71,6 +71,70 @@ Configuration file location:
 </details>
 
 <details>
+<summary>NixOS</summary>
+
+This repository provides a flake with a package and a NixOS module.
+
+### Flake usage
+
+Add the input to your `flake.nix`:
+
+```nix
+{
+  inputs.cyan-skillfish-governor.url = "github:filippor/cyan-skillfish-governor";
+
+  outputs = { nixpkgs, cyan-skillfish-governor, ... }: {
+    nixosConfigurations.my-machine = nixpkgs.lib.nixosSystem {
+      modules = [
+        cyan-skillfish-governor.nixosModules.default
+        {
+          hardware.cyan-skillfish-governor.enable = true;
+
+          # Optional: override individual settings (defaults match default-config.toml)
+          hardware.cyan-skillfish-governor.settings = {
+            gpu-usage.method = "process";
+            dbus.enabled = true;
+          };
+        }
+      ];
+    };
+  };
+}
+```
+
+Without flakes (using `nix-build` / `nix-shell`):
+
+```bash
+nix-build
+sudo ./result/bin/cyan-skillfish-governor-smu /etc/cyan-skillfish-governor-smu/config.toml
+```
+
+### Development shell
+
+```bash
+nix develop
+cargo build --release
+```
+
+### Module options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `hardware.cyan-skillfish-governor.enable` | `bool` | `false` | Enable the governor daemon, D-Bus policy, and systemd service |
+| `hardware.cyan-skillfish-governor.package` | `package` | *(from flake)* | Package to use for the binary and support files |
+| `hardware.cyan-skillfish-governor.settings` | `TOML` | *(see default-config.toml)* | Governor configuration (see [Configuration](#configuration) section) |
+If `settings` is left with the default, it produces a TOML file equivalent to [default-config.toml](default-config.toml). The
+raw default config shipped in the package is also available at
+`${pkgs.cyan-skillfish-governor-smu}/share/cyan-skillfish-governor-smu/config.toml`.
+
+Configuration file location (generated from Nix):
+```
+/etc/cyan-skillfish-governor-smu/config.toml
+```
+
+</details>
+
+<details>
 <summary>Arch</summary>
 
 Install from AUR package `cyan-skillfish-governor-smu` with your preferred AUR helper:
@@ -186,7 +250,7 @@ If everything looks good, then enable it:
 systemctl enable cyan-skillfish-governor-smu
 ```
 
-after configuration change restart the service with 
+after configuration change restart the service with
 ```bash
 systemctl restart cyan-skillfish-governor-smu
 ```
@@ -248,7 +312,7 @@ Top-level keys:
 
 Use [default-config.toml](default-config.toml) as a baseline profile.
 
-## Configuration note 
+## Configuration note
 At 25 FPS with heavy CPU load:
 GPU actually renders in ~18 ms per frame
 GPU waits ~22 ms for CPU
@@ -351,7 +415,7 @@ For current range, use `0` for an open bound and keep the pair valid (`min <= ma
 
 **Interface**: `com.cyanskillfish.Governor.TestMode` (root-only, requires authorization)
 
-> **Security Note**: The TestMode interface is restricted to root access only 
+> **Security Note**: The TestMode interface is restricted to root access only
 #### Methods
 
 - `SetTestMode(frequency: u32, voltage: u32)` — Set specific frequency and voltage and disable automatic adjustment. Thermal throttling remains active.
