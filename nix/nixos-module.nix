@@ -87,6 +87,7 @@ in {
 
     systemd.services.cyan-skillfish-governor-smu = {
       description = "Cyan Skillfish GPU Governor";
+      path = [ pkgs.util-linux ];
       conflicts = [
         "cyan-skillfish-governor.service"
         "cyan-skillfish-governor-tt.service"
