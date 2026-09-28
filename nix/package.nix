@@ -3,9 +3,10 @@
   rustPlatform,
   pkg-config,
   libdrm,
-}: let
-  version = "0.4.0";
-in
+  # Overridable; the flake passes a revision-derived value. Upstream versions
+  # releases by git tag only, so there is no reliable checked-in version.
+  version ? "0.0.0-unstable",
+}:
   rustPlatform.buildRustPackage {
     pname = "cyan-skillfish-governor-smu";
     inherit version;
